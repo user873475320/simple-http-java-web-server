@@ -5,47 +5,91 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Anime-Style Page</title>
     <style>
-        body {
-            background-color: #f4f4f4;
-            font-family: 'Segoe UI', sans-serif;
-            color: #333;
-            text-align: center;
+        /* Your existing styles */
+
+        /* New styles for the anime section */
+        .anime-section {
+            background-color: #fff;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            margin: 20px auto;
+            max-width: 800px;
         }
 
-        h1 {
-            font-family: 'Pacifico', cursive;
-            font-size: 48px;
-            margin: 20px;
+        .subsection {
+            text-align: left;
+            margin-top: 20px;
+            padding-left: 20px;
+            border-left: 2px solid #ff9900;
+        }
+
+        /* New styles for improved aesthetics */
+        .anime-title {
+            font-size: 36px;
+            color: #333;
+        }
+
+        .character-subsection {
+            border-left-color: #66ccff;
+        }
+
+        h2, h3 {
+            font-size: 28px;
             color: #ff9900;
         }
 
-        p {
-            font-size: 18px;
-            margin: 10px;
+        p.character-description {
+            font-size: 20px;
+            font-style: italic;
+            color: #555;
         }
 
-        img {
-            width: 300px;
-            border-radius: 50%;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-            margin: 20px;
+        /* New styles for character images */
+        .character-image {
+            width: 150px;
+            height: 150px;
+            border-radius: 5px; /* Square frame */
+            margin-top: 10px;
         }
     </style>
 </head>
 <body>
-<h1>Welcome to Anime World!</h1>
-<img src="pino.jpg" alt="Anime Character">
-<p>
-    In the magical world of anime, anything is possible! Explore fantastic landscapes, meet quirky characters, and embark on thrilling adventures that will capture your imagination.
-</p>
-<p>
-    Join us as we dive into the realm of anime, where emotions run deep, and stories unfold in mesmerizing ways. Get ready to immerse yourself in a world of wonder and creativity!
-</p>
-<p>
-    Anime is not just entertainment; it's an art form that touches hearts and sparks dreams. Let your imagination soar as you delve into the endless possibilities of anime!
-</p>
-<p>
-    Are you ready to embark on an extraordinary journey? Let the magic of anime guide you as you experience a world like no other.
-</p>
+<!-- Your existing content -->
+
+<!-- New Anime Section -->
+<div class="anime-section">
+    <h2 class="anime-title">Steins;Gate Anime</h2>
+    <p style="font-size: 28px;">
+        "Steins;Gate" is a science fiction anime that follows the story of a young scientist named Okabe Rintarou, also known as Okabe, and his friends as they accidentally create a device that allows them to send text messages to the past, altering the course of history.
+    </p>
+    <div class="subsection">
+        <h3>Main Plot</h3>
+        <p style="font-size: 26px;">
+            The main plot revolves around Okabe's discovery of the time-traveling device and the unintended consequences of manipulating the past. As the group experiments with the device, they find themselves entangled in a complex web of alternate timelines and must confront the ethical and personal dilemmas that arise.
+        </p>
+    </div>
+    <div class="subsection character-subsection">
+        <h3>Kurisu Makise</h3>
+        <img src="kurisu.webp" alt="Kurisu Makise" class="character-image" style="width: 120px; height: auto;">
+        <p class="character-description">
+            Kurisu Makise is a brilliant neuroscientist and one of the central characters in the anime. Her expertise in time travel contributes to the group's efforts to understand and control their newfound ability.
+        </p>
+    </div>
+    <div class="subsection character-subsection">
+        <h3>Okabe Rintarou (Okabe)</h3>
+        <img src="okabe.webp" alt="Okabe Rintarou" class="character-image" style="width: 120px; height: auto;">
+        <p class="character-description">
+            Okabe, also known as "Hououin Kyouma," is an eccentric scientist who leads the group in their experiments. He adopts a flamboyant persona and often speaks in theatrical language.
+        </p>
+    </div>
+    <div class="subsection character-subsection">
+        <h3>Itaru Hashida (Daru)</h3>
+        <img src="daru.webp" alt="Itaru Hashida" class="character-image" style="width: 120px; height: auto;">
+        <p class="character-description">
+            Itaru Hashida, often referred to as "Daru," is a skilled hacker and a vital member of the group. He assists in developing and modifying the time-traveling device.
+        </p>
+    </div>
+</div>
+
 </body>
 </html>

@@ -1,4 +1,6 @@
-package Practice.projects.HTTP_Server;
+package main;
+
+import org.w3c.dom.ls.LSOutput;
 
 import java.io.*;
 import java.net.Socket;
@@ -8,6 +10,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class UserHandler implements Runnable {
+
 	private String pathToDir;
 	private Socket socket;
 	private HashMap<String, String> CONTENT_TYPES = new HashMap<>(Map.of(
@@ -30,20 +33,34 @@ public class UserHandler implements Runnable {
 		try (var input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 		     var output = socket.getOutputStream()) {
 
-			String fullRequest = input.readLine();
+			HttpRequest requestObj = new HttpRequest(input);
+
+			String fullRequest = requestObj.getFullRequest();
 
 			if (fullRequest != null) {
+				Map<String, String> headers = requestObj.getHeaders();
+				String requestPath = requestObj.getPath();
+				String method = requestObj.getMethod();
+				String protocolVersion = requestObj.getProtocolVersion();
 				System.out.println(fullRequest);
 
-				String requestURL = getRequestURL(fullRequest);
-				HashMap<String, String> headers = getRequestHeaders(input);
-				String fileName = getFileName(requestURL);
+				String fileName = requestObj.getNameOfRequestedFile();
+				String fileExtension = requestObj.getExtensionOfRequestedFile();
 				Path pathToFile = Path.of(pathToDir, fileName);
+				Map<String, String> queryParameters = requestObj.getQueryParameters();
 
-	//			// Print headers for debugging
-	//			for (String s : headers.keySet()) {
-	//				System.out.println(s + " " + headers.get(s));
-	//			}
+//				 Print headers for debugging
+//				for (String s : headers.keySet()) {
+//					System.out.println(s + " " + headers.get(s));
+//				}
+
+//				// Print query parameters
+//				System.out.println("--------------");
+//				for (String s : queryParameters.keySet()) {
+//					System.out.println(s + " " + queryParameters.get(s));
+//				}
+//				System.out.println("--------------");
+
 	//			System.out.println();
 	//			System.out.println("fileName = " + fileName);
 	//			System.out.println("requestURL = " + requestURL);
@@ -52,7 +69,7 @@ public class UserHandler implements Runnable {
 
 				if (Files.exists(pathToFile)) {
 					if (!Files.isDirectory(pathToFile)) {
-						String contentType = CONTENT_TYPES.get(getFileExtension(fileName));
+						String contentType = CONTENT_TYPES.get(fileExtension);
 						byte[] fileBytes = Files.readAllBytes(pathToFile);
 						sendHeaders(output, 200, "OK", contentType, fileBytes.length);
 						output.write(fileBytes);
@@ -73,37 +90,6 @@ public class UserHandler implements Runnable {
 		}
 	}
 
-	private String getMethod(String fullRequest) {
-		return fullRequest.split(" ")[0].strip();
-	}
-
-	private String getRequestURL(String fullRequest) {
-		return fullRequest.split(" ")[1].strip();
-	}
-
-	private String getFileName(String requestURL) {
-		String[] pieces = requestURL.split("/");
-		return pieces[pieces.length - 1].strip();
-	}
-
-	private String getFileExtension(String fileName) {
-		return fileName.split("\\.")[1].strip();
-	}
-
-	private HashMap<String, String> getRequestHeaders(BufferedReader input) throws IOException{
-		HashMap<String, String> headers = new HashMap<>();
-		String line = null;
-
-		while (!(line = input.readLine()).isBlank()) {
-			int colonIndex = line.indexOf(':');
-			if (colonIndex > 0) {
-				String headerName = line.substring(0, colonIndex).trim().toLowerCase();
-				String headerValue = line.substring(colonIndex + 1).trim();
-				headers.put(headerName, headerValue);
-			}
-		}
-		return headers;
-	}
 
 	private void sendHeaders(OutputStream outputStream, int statusCode, String statusText, String contentType, int length) {
 		PrintStream ps = new PrintStream(outputStream);
