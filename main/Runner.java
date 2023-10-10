@@ -19,7 +19,7 @@ public class Runner {
 
 	private void start() {
 		try (ServerSocket ss = new ServerSocket(port)) {
-			Socket socket = null;
+			Socket socket;
 			while (true) {
 				socket = ss.accept();
 				UserHandler handler = new UserHandler(pathToDir, socket);
@@ -34,13 +34,15 @@ public class Runner {
 //					throw new RuntimeException(e);
 //				}
 
-				System.out.println("End of one request, " + debugCount);
+//				System.out.println("End of one request, " + debugCount);
 				debugCount++;
-				System.out.println("==========");
-				for (Thread thread : threads) {
-					System.out.println(thread.getName());
-				}
-				System.out.println("==========");
+
+//				System.out.println("==========");
+//				for (Thread thread : threads) {
+//					System.out.println(thread.getName());
+//				}
+//				System.out.println("==========");
+				System.out.println();
 			}
 		}
 		catch (IOException e) {

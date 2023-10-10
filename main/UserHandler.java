@@ -13,6 +13,7 @@ public class UserHandler implements Runnable {
 
 	private String pathToDir;
 	private Socket socket;
+	private HttpRequest requestObj = null;
 	private HashMap<String, String> CONTENT_TYPES = new HashMap<>(Map.of(
 			"txt", "text/plain",
 			"html", "text/html",
@@ -33,7 +34,7 @@ public class UserHandler implements Runnable {
 		try (var input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 		     var output = socket.getOutputStream()) {
 
-			HttpRequest requestObj = new HttpRequest(input);
+			requestObj = new HttpRequest(input);
 
 			String fullRequest = requestObj.getFullRequest();
 
@@ -42,46 +43,40 @@ public class UserHandler implements Runnable {
 				String requestPath = requestObj.getPath();
 				String method = requestObj.getMethod();
 				String protocolVersion = requestObj.getProtocolVersion();
-				System.out.println(fullRequest);
 
-				String fileName = requestObj.getNameOfRequestedFile();
-				String fileExtension = requestObj.getExtensionOfRequestedFile();
-				Path pathToFile = Path.of(pathToDir, fileName);
-				Map<String, String> queryParameters = requestObj.getQueryParameters();
+				// Prints debug info
+				printDebugInfo();
 
-//				 Print headers for debugging
-//				for (String s : headers.keySet()) {
-//					System.out.println(s + " " + headers.get(s));
-//				}
+				// Make separate method for GET handling
+				if (method.equals("GET")) {
+					String fileName = requestObj.getNameOfRequestedFile();
+					String fileExtension = requestObj.getExtensionOfRequestedFile();
+					Path pathToFile = Path.of(pathToDir, fileName);
+					Map<String, String> queryParameters = requestObj.getQueryParameters();
 
-//				// Print query parameters
-//				System.out.println("--------------");
-//				for (String s : queryParameters.keySet()) {
-//					System.out.println(s + " " + queryParameters.get(s));
-//				}
-//				System.out.println("--------------");
-
-	//			System.out.println();
-	//			System.out.println("fileName = " + fileName);
-	//			System.out.println("requestURL = " + requestURL);
-	//			System.out.println("path = " + path);
-	//			System.out.println("contentType = " + contentType);
-
-				if (Files.exists(pathToFile)) {
-					if (!Files.isDirectory(pathToFile)) {
-						String contentType = CONTENT_TYPES.get(fileExtension);
-						byte[] fileBytes = Files.readAllBytes(pathToFile);
-						sendHeaders(output, 200, "OK", contentType, fileBytes.length);
-						output.write(fileBytes);
+					if (Files.exists(pathToFile)) {
+						if (!Files.isDirectory(pathToFile)) {
+							String contentType = CONTENT_TYPES.get(fileExtension);
+							byte[] fileBytes = Files.readAllBytes(pathToFile);
+							sendHeaders(output, 200, "OK", contentType, fileBytes.length);
+							output.write(fileBytes);
+						} else {
+							String statusText = "Error: \"File\" is directory";
+							String contentType = CONTENT_TYPES.get("txt");
+							sendHeaders(output, 404, statusText, contentType, statusText.length());
+						}
 					} else {
-						String statusText = "Error: \"File\" is directory";
+						String statusText = "Error: File Not Found";
 						String contentType = CONTENT_TYPES.get("txt");
 						sendHeaders(output, 404, statusText, contentType, statusText.length());
 					}
-				} else {
-					String statusText = "Error: File Not Found";
-					String contentType = CONTENT_TYPES.get("txt");
-					sendHeaders(output, 404, statusText, contentType, statusText.length());
+				} else if (method.equals("POST")) {
+					String path = requestObj.getPath();
+
+
+					// Send a response to the client
+					PrintStream ps = new PrintStream(output);
+					ps.printf("HTTP/1.1 %s %s%n%n", 200, "nice");
 				}
 			}
 		}
@@ -90,8 +85,51 @@ public class UserHandler implements Runnable {
 		}
 	}
 
+	private void printDebugInfo() {
+		String fullRequest = requestObj.getFullRequest();
+		Map<String, String> headers = requestObj.getHeaders();
+		String requestPath = requestObj.getPath();
+		String method = requestObj.getMethod();
+		String protocolVersion = requestObj.getProtocolVersion();
+
+		String fileName = requestObj.getNameOfRequestedFile();
+		String fileExtension = requestObj.getExtensionOfRequestedFile();
+		Path pathToFile = Path.of(pathToDir, fileName);
+		Map<String, String> queryParameters = requestObj.getQueryParameters();
+
+		System.out.println(fullRequest);
+		System.out.println("-------Info from this request-------");
+		System.out.println("Headers: ");
+		if (headers != null) {
+			for (String s : headers.keySet()) {
+				System.out.println(s + " " + headers.get(s));
+			}
+		}
+		System.out.println();
+
+		// Print query parameters
+		System.out.println("\nThe query parameters");
+		if (queryParameters != null) {
+			for (String s : queryParameters.keySet()) System.out.println(s + " " + queryParameters.get(s));
+		}
+		System.out.println();
+
+		// Print another information
+		System.out.println("Another information");
+
+		System.out.println("fullRequest = " + fullRequest);
+		System.out.println("method = " + method);
+		System.out.println("requestPath = " + requestPath);
+		System.out.println("protocolVersion = " + protocolVersion);
+		System.out.println("pathToFile = " + pathToFile);
+		System.out.println("pathToDir = " + pathToDir);
+		System.out.println("fileName = " + fileName);
+		System.out.println("fileExtension = " + fileExtension);
+	}
+
 
 	private void sendHeaders(OutputStream outputStream, int statusCode, String statusText, String contentType, int length) {
+
 		PrintStream ps = new PrintStream(outputStream);
 		ps.printf("HTTP/1.1 %s %s%n", statusCode, statusText);
 		ps.printf("Content-Type: %s%n", contentType);
