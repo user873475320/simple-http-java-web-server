@@ -1,7 +1,3 @@
-package main;
-
-import org.w3c.dom.ls.LSOutput;
-
 import java.io.*;
 import java.net.Socket;
 import java.nio.file.Files;
@@ -10,7 +6,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class UserHandler implements Runnable {
-
 	private String pathToDir;
 	private Socket socket;
 	private HttpRequest requestObj = null;
@@ -44,8 +39,6 @@ public class UserHandler implements Runnable {
 				String method = requestObj.getMethod();
 				String protocolVersion = requestObj.getProtocolVersion();
 
-				// Prints debug info
-				printDebugInfo();
 
 				// Make separate method for GET handling
 				if (method.equals("GET")) {
@@ -53,6 +46,9 @@ public class UserHandler implements Runnable {
 					String fileExtension = requestObj.getExtensionOfRequestedFile();
 					Path pathToFile = Path.of(pathToDir, fileName);
 					Map<String, String> queryParameters = requestObj.getQueryParameters();
+
+					// Prints debug info
+					printDebugInfo();
 
 					if (Files.exists(pathToFile)) {
 						if (!Files.isDirectory(pathToFile)) {
@@ -73,7 +69,8 @@ public class UserHandler implements Runnable {
 				} else if (method.equals("POST")) {
 					String path = requestObj.getPath();
 
-
+					printDebugInfo();
+					
 					// Send a response to the client
 					PrintStream ps = new PrintStream(output);
 					ps.printf("HTTP/1.1 %s %s%n%n", 200, "nice");
