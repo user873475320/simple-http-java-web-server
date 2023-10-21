@@ -12,35 +12,19 @@ public class Runner {
 		this.pathToDir = pathToDir;
 	}
 
-	static int debugCount = 0;
+	static int threadCount = 0;
 	static LinkedList<Thread> threads = new LinkedList<>();
 
 	private void start() {
 		try (ServerSocket ss = new ServerSocket(port)) {
 			Socket socket;
+
 			while (true) {
 				socket = ss.accept();
 				UserHandler handler = new UserHandler(pathToDir, socket);
-				Thread thr = new Thread(handler, "Thread #" + debugCount);
+				Thread thr = new Thread(handler, "Thread #" + threadCount);
 				threads.add(thr);
 				thr.start();
-
-//				try {
-//					thr.join();
-//				}
-//				catch (InterruptedException e) {
-//					throw new RuntimeException(e);
-//				}
-
-//				System.out.println("End of one request, " + debugCount);
-				debugCount++;
-
-//				System.out.println("==========");
-//				for (Thread thread : threads) {
-//					System.out.println(thread.getName());
-//				}
-//				System.out.println("==========");
-				System.out.println();
 			}
 		}
 		catch (IOException e) {
@@ -50,8 +34,8 @@ public class Runner {
 	}
 
 	public static void main(String[] args) {
-		int port = 8081;
-		String path = "/home/none/Dropbox/main1/Java/simple-http-java-web-server/files";
+		int port = 8080;
+		String path = "/home/none/Dropbox/main1/Java/simple-http-java-web-server/resources/files";
 		new Runner(port, path).start();
 	}
 }

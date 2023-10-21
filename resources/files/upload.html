@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>File Upload Page</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f2f2f2;
+            text-align: center;
+            padding: 20px;
+        }
+
+        #container {
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+            padding: 20px;
+            text-align: center;
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        label.upload-label {
+            background-color: #3498db;
+            color: #ffffff;
+            cursor: pointer;
+            padding: 10px 20px;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+
+        label.upload-label:hover {
+            background-color: #2980b9;
+        }
+
+        #file-name {
+            color: #333;
+        }
+
+        input[type="submit"] {
+            display: none;
+        }
+
+        label.submit-label {
+            background-color: #2ecc71;
+            color: #ffffff;
+            cursor: pointer;
+            padding: 10px 20px;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+
+        label.submit-label:hover {
+            background-color: #27ae60;
+        }
+
+        .info-message {
+            color: #e74c3c; /* Red color for emphasis */
+            font-weight: bold;
+            margin-top: 10px;
+            font-size: 18px; /* Larger font size for emphasis */
+            text-transform: uppercase; /* Uppercase text */
+            background-color: #f9e79f; /* Yellow background color for highlight */
+            padding: 10px;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+<div id="container">
+    <h1>Upload a File</h1>
+    <p class="info-message">Upload text (.txt) files only.</p>
+    <form action="http://localhost:8080/upload" method="POST" enctype="multipart/form-data">
+        <label class="upload-label" for="file-input">Choose File</label>
+        <input type="file" id="file-input" name="file" accept=".jpg, .jpeg, .png, .gif, .pdf, .doc, .txt" onchange="displayFileName()">
+        <p id="file-name">No file selected</p>
+        <label class="submit-label" for="submit-button">Upload File</label>
+        <input type="submit" id="submit-button">
+    </form>
+</div>
+
+<script>
+    function displayFileName() {
+        const fileInput = document.getElementById('file-input');
+        const fileNameDisplay = document.getElementById('file-name');
+        fileNameDisplay.textContent = fileInput.files.length > 0 ? `Selected File: ${fileInput.files[0].name}` : 'No file selected';
+    }
+</script>
+</body>
+</html>

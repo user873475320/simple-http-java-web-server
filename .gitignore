@@ -1,4 +1,5 @@
 .idea
-test/test1.java
+simple-http-java-web-server.iml
 simple-Http-Web-server.iml
 out
+resources/files/uploadedFiles

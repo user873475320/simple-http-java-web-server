@@ -20,11 +20,12 @@ public class HttpRequest {
 	private String method;
 	private String path;
 	private String protocolVersion;
-	private String fragmentIdentifier;
 	private String nameOfRequestedFile;
 	private String extensionOfRequestedFile;
 	private Map<String, String> headers;
 	private Map<String, String> queryParameters;
+	private String delimiterOfPostRequestBody;
+
 
 	private BufferedReader input;
 
@@ -35,7 +36,6 @@ public class HttpRequest {
 			fullRequest = fullRequest.strip();
 		}
 	}
-
 
 	private void _getMethod() {
 		method = fullRequest.split(" ")[0].strip();
@@ -55,21 +55,21 @@ public class HttpRequest {
 
 		try {
 			while (!(line = input.readLine()).isBlank()) {
+
 				int colonIndex = line.indexOf(':');
 				if (colonIndex > 0) {
-					String headerName = line.substring(0, colonIndex).trim().toLowerCase();
-					String headerValue = line.substring(colonIndex + 1).trim();
+					String headerName = line.substring(0, colonIndex).trim().toLowerCase().strip();
+					String headerValue = line.substring(colonIndex + 1).strip();
 					headers.put(headerName, headerValue);
 				}
 			}
 			if (!headers.isEmpty()) this.headers = headers;
 		}
 		catch (IOException e) {
-			// Add a logging to a file
-			e.printStackTrace();
+			// TODO: Add a logging to a file
+			throw new RuntimeException(e);
 		}
 	}
-
 
 	/*
 	 * In this method we imply that in a URL we will have only one "#" and only one "?" sign. Also, we can't use "="
@@ -81,11 +81,11 @@ public class HttpRequest {
 		// The number of the first "?" sign
 		int index = path.indexOf('?');
 		if (index != -1) {
-			String parameters = path.substring(index + 1, (path.indexOf('#') == -1) ? (path.length()) : (path.indexOf('#')));
+			String parameters = path.substring(index + 1, (path.indexOf('#') == -1) ? (path.length()) : (path.indexOf('#'))).strip();
 			String kv[] = parameters.split("&");
 
 			for (int i = 0; i < kv.length; i++) {
-				queryParameters.put(kv[i].split("=")[0], kv[i].split("=")[1]);
+				queryParameters.put(kv[i].split("=")[0].strip(), kv[i].split("=")[1].strip());
 			}
 		}
 		if (!queryParameters.isEmpty()) {
@@ -113,6 +113,22 @@ public class HttpRequest {
 			extensionOfRequestedFile = "";
 		}
 
+	}
+
+	private void _getDelimiterOfPostRequestBody() {
+		String boundaryPattern = "boundary=";
+		Map<String, String> map = getHeaders();
+		for (Map.Entry<String, String> stringStringEntry : map.entrySet()) {
+			String key = stringStringEntry.getKey();
+			String value = stringStringEntry.getValue();
+
+			if (key.equalsIgnoreCase("Content-Type")) {
+				int tmpIndex = value.indexOf(";", value.indexOf(boundaryPattern));
+				int endIndex = (tmpIndex != -1) ? tmpIndex : value.length();
+				int beginIndex = value.indexOf(boundaryPattern) + boundaryPattern.length();
+				delimiterOfPostRequestBody = value.substring(beginIndex, endIndex).strip();
+			}
+		}
 	}
 
 	public String getNameOfRequestedFile() {
@@ -144,7 +160,7 @@ public class HttpRequest {
 		return protocolVersion;
 	}
 
-	public Map<String, String> getHeaders(){
+	public Map<String, String> getHeaders() {
 		if (headers == null) _getHeaders();
 		return headers;
 	}
@@ -153,4 +169,10 @@ public class HttpRequest {
 		if (queryParameters == null) _getQueryParameters();
 		return queryParameters;
 	}
+
+	public String getDelimiterOfPostRequestBody() {
+		if (delimiterOfPostRequestBody == null) _getDelimiterOfPostRequestBody();
+		return delimiterOfPostRequestBody;
+	}
+
 }
