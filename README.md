@@ -1,2 +1,2 @@
 # simple-http-java-web-server
-The simple HTTP Java web-server that can hadnle GET requests and send the specified files to the client. Also it can handle POST method(that is, you can upload ONLY text files to the web-server).
+This Java web server is designed to handle both GET and POST requests. It efficiently serves specified files to clients upon receiving a GET request. For POST requests, the server allows the upload of ONLY text files.
