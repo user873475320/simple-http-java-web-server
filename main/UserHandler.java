@@ -2,10 +2,7 @@ import java.io.*;
 import java.net.Socket;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.List;
+import java.util.*;
 
 public class UserHandler implements Runnable {
 	private String pathToDir;
@@ -22,15 +19,18 @@ public class UserHandler implements Runnable {
 	));
 
 	// UPLOAD_FOLDER specifies regarding "pathToDir"
-	private String UPLOADED_FOLDER = "/uploadedFiles";
-	private String REDIRECT_LINK = "http://localhost:8080/upload.html";
-	private String FILE_NOT_FOUND = "Error: File Not Found";
-	private String FILE_IS_DIRECTORY = "Error: \"File\" is directory";
+	private String uploadedFolder;
+	private String redirectLink;
+	private final String FILE_NOT_FOUND = "Error: File Not Found";
+	private final String FILE_IS_DIRECTORY = "Error: \"File\" is directory";
 
 
-	public UserHandler(String pathToDir, Socket socket) {
+	// socket, pathToDir, uploadedFolder, redirectLink
+	public UserHandler(Socket socket, String pathToDir, String uploadedFolder, String redirectLink) {
 		this.pathToDir = pathToDir;
 		this.socket = socket;
+		this.uploadedFolder = uploadedFolder;
+		this.redirectLink = redirectLink;
 	}
 
 	@Override
@@ -70,7 +70,7 @@ public class UserHandler implements Runnable {
 		printDebugInfo();
 
 		// Define the directory where uploaded files will be saved
-		File uploadDirectory = new File(pathToDir, UPLOADED_FOLDER);
+		File uploadDirectory = new File(pathToDir, uploadedFolder);
 		if (!uploadDirectory.exists()) uploadDirectory.mkdirs();
 
 		try {
@@ -78,7 +78,7 @@ public class UserHandler implements Runnable {
 		}
 		catch (IllegalArgumentException e) {
 			try {
-				redirect(REDIRECT_LINK, "Not a single file was selected. Redirecting to the start page",
+				redirect(redirectLink, "Not a single file was selected. Redirecting to the start page",
 						302, socketOutputStream);
 				return;
 			}
@@ -89,7 +89,7 @@ public class UserHandler implements Runnable {
 		}
 
 		try {
-			redirect(REDIRECT_LINK, "File has been uploaded successfully. Redirecting to the start page",
+			redirect(redirectLink, "File has been uploaded successfully. Redirecting to the start page",
 					302, socketOutputStream);
 		}
 		catch (IOException e) {
@@ -216,7 +216,11 @@ public class UserHandler implements Runnable {
 
 				try {
 					byte[] fileBytes = Files.readAllBytes(pathToFile);
-					sendHeaders(socketOutputStream, 200, "OK", contentType, fileBytes.length);
+					Map<String, String> headersMap = new HashMap<>(Map.of(
+							"Content-Type", String.valueOf(fileBytes.length),
+							"Content-Length", contentType
+					));
+					sendHeaders(socketOutputStream, 200, "OK", headersMap);
 					socketOutputStream.write(fileBytes);
 				}
 				catch (IOException e) {
@@ -225,11 +229,20 @@ public class UserHandler implements Runnable {
 				}
 			} else {
 				String contentType = CONTENT_TYPES.get("");
-				sendHeaders(socketOutputStream, 404, FILE_IS_DIRECTORY, contentType, FILE_IS_DIRECTORY.length());
+				Map<String, String> headersMap = new HashMap<>(Map.of(
+						"Content-Type", String.valueOf(FILE_IS_DIRECTORY.length()),
+						"Content-Length", contentType
+				));
+
+				sendHeaders(socketOutputStream, 404, FILE_IS_DIRECTORY, headersMap);
 			}
 		} else {
 			String contentType = CONTENT_TYPES.get("");
-			sendHeaders(socketOutputStream, 404, FILE_NOT_FOUND, contentType, FILE_NOT_FOUND.length());
+			Map<String, String> headersMap = new HashMap<>(Map.of(
+					"Content-Type", String.valueOf(FILE_IS_DIRECTORY.length()),
+					"Content-Length", contentType
+			));
+			sendHeaders(socketOutputStream, 404, FILE_NOT_FOUND, headersMap);
 		}
 	}
 
@@ -278,13 +291,18 @@ public class UserHandler implements Runnable {
 	}
 
 
-	private void sendHeaders(OutputStream outputStream, int statusCode, String statusText, String contentType, int length) {
-
+	private void sendHeaders(OutputStream outputStream, int statusCode, String statusText, Map<String, String> headersMap) {
 		PrintStream ps = new PrintStream(outputStream);
 		ps.printf("HTTP/1.1 %s %s%n", statusCode, statusText);
-		ps.printf("Content-Type: %s%n", contentType);
 
-		// Here is important moment: You must add one more %n in the end of the last "header string"
-		ps.printf("Content-Length: %s%n%n", length);
+		var headersList = new ArrayList<>(headersMap.keySet());
+		for (int i = 0; i < headersList.size(); i++) {
+			// Here is important moment: You must add one more %n in the end of the last "header's line"
+			if ((i == headersMap.size() - 1) && (headersList.get(i) != null)) {
+				ps.printf("%s: %s%n%n", headersList.get(i), headersMap.get(headersList.get(i)));
+			} else if ((i != headersMap.size() - 1) && (headersList.get(i) != null)) {
+				ps.printf("%s: %s%n", headersList.get(i), headersMap.get(headersList.get(i)));
+			}
+		}
 	}
 }
