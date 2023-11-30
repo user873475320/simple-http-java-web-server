@@ -12,10 +12,9 @@ public class HttpRequest {
 	 * https://blog.example.com/post
 	 * https://blog.example.com
 	 * In other words, we can only have one "?" or/and one "#" or nothing of two
-	 *
 	 * */
 
-
+	// Instance variables to store parsed HTTP request information
 	private String fullRequest;
 	private String method;
 	private String path;
@@ -26,9 +25,9 @@ public class HttpRequest {
 	private Map<String, String> queryParameters;
 	private String delimiterOfPostRequestBody;
 
-
 	private BufferedReader input;
 
+	// Constructor to initialize HttpRequest with input BufferedReader
 	public HttpRequest(BufferedReader input) throws IOException {
 		this.input = input;
 		fullRequest = input.readLine();
@@ -37,18 +36,22 @@ public class HttpRequest {
 		}
 	}
 
+	// Method to extract HTTP method from the full request
 	private void _getMethod() {
 		method = fullRequest.split(" ")[0].strip();
 	}
 
+	// Method to extract the path from the full request
 	private void _getPath() {
 		path = fullRequest.split(" ")[1].strip();
 	}
 
+	// Method to extract the HTTP protocol version from the full request
 	private void _getProtocolVersion() {
 		protocolVersion = fullRequest.split(" ")[2].strip();
 	}
 
+	// Method to extract headers from the full request
 	private void _getHeaders() {
 		Map<String, String> headers = new HashMap<>();
 		String line;
@@ -64,17 +67,17 @@ public class HttpRequest {
 				}
 			}
 			if (!headers.isEmpty()) this.headers = headers;
-		}
-		catch (IOException e) {
-			// TODO: Add a logging to a file
+		} catch (IOException e) {
+			// Exception handling: Add logging to a file and propagate a runtime exception
 			throw new RuntimeException(e);
 		}
 	}
 
 	/*
-	 * In this method we imply that in a URL we will have only one "#" and only one "?" sign. Also, we can't use "="
-	 * in a URL not as separator for a key and value
+	 * In this method, we imply that in a URL we will have only one "#" and only one "?" sign. Also, we can't use "="
+	 * in a URL not as a separator for a key and value
 	 * */
+	// Method to extract query parameters from the path
 	private void _getQueryParameters() {
 		Map<String, String> queryParameters = new LinkedHashMap<>();
 
@@ -93,6 +96,7 @@ public class HttpRequest {
 		}
 	}
 
+	// Method to extract the name of the requested file from the path
 	private void _getNameOfRequestedFile() {
 		if (path.indexOf('?') != -1) {
 			int index = path.lastIndexOf('/');
@@ -106,15 +110,16 @@ public class HttpRequest {
 		}
 	}
 
+	// Method to extract the extension of the requested file from the name
 	private void _getExtensionOfRequestedFile() {
 		if (nameOfRequestedFile.indexOf('.') != -1) {
 			extensionOfRequestedFile = nameOfRequestedFile.split("\\.")[1].strip();
 		} else {
 			extensionOfRequestedFile = "";
 		}
-
 	}
 
+	// Method to extract the delimiter of the POST request body
 	private void _getDelimiterOfPostRequestBody() {
 		String boundaryPattern = "boundary=";
 		Map<String, String> map = getHeaders();
@@ -131,48 +136,56 @@ public class HttpRequest {
 		}
 	}
 
+	// Getter method to retrieve the name of the requested file
 	public String getNameOfRequestedFile() {
 		if (nameOfRequestedFile == null) _getNameOfRequestedFile();
 		return nameOfRequestedFile;
 	}
 
+	// Getter method to retrieve the extension of the requested file
 	public String getExtensionOfRequestedFile() {
 		if (extensionOfRequestedFile == null) _getExtensionOfRequestedFile();
 		return extensionOfRequestedFile;
 	}
 
+	// Getter method to retrieve the full request
 	public String getFullRequest() {
 		return fullRequest;
 	}
 
+	// Getter method to retrieve the HTTP method
 	public String getMethod() {
 		if (method == null) _getMethod();
 		return method;
 	}
 
+	// Getter method to retrieve the request path
 	public String getPath() {
 		if (path == null) _getPath();
 		return path;
 	}
 
+	// Getter method to retrieve the HTTP protocol version
 	public String getProtocolVersion() {
 		if (protocolVersion == null) _getProtocolVersion();
 		return protocolVersion;
 	}
 
+	// Getter method to retrieve the request headers
 	public Map<String, String> getHeaders() {
 		if (headers == null) _getHeaders();
 		return headers;
 	}
 
+	// Getter method to retrieve the query parameters
 	public Map<String, String> getQueryParameters() {
 		if (queryParameters == null) _getQueryParameters();
 		return queryParameters;
 	}
 
+	// Getter method to retrieve the delimiter of the POST request body
 	public String getDelimiterOfPostRequestBody() {
 		if (delimiterOfPostRequestBody == null) _getDelimiterOfPostRequestBody();
 		return delimiterOfPostRequestBody;
 	}
-
 }

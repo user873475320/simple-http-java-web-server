@@ -8,6 +8,7 @@ public class UserHandler implements Runnable {
 	private String pathToDir;
 	private Socket socket;
 	private HttpRequest requestObj = null;
+	// Map of content types for different file extensions
 	private HashMap<String, String> CONTENT_TYPES = new HashMap<>(Map.of(
 			"txt", "text/plain",
 			"html", "text/html",
@@ -18,14 +19,15 @@ public class UserHandler implements Runnable {
 			"", "text/plain"
 	));
 
-	// UPLOAD_FOLDER specifies regarding "pathToDir"
+	// UPLOAD_FOLDER specifies the directory relative to "pathToDir"
 	private String uploadedFolder;
 	private String redirectLink;
+	// Constants for error messages
 	private final String FILE_NOT_FOUND = "Error: File Not Found";
 	private final String FILE_IS_DIRECTORY = "Error: \"File\" is directory";
 
 
-	// socket, pathToDir, uploadedFolder, redirectLink
+	// Constructor to initialize the UserHandler with required parameters
 	public UserHandler(Socket socket, String pathToDir, String uploadedFolder, String redirectLink) {
 		this.pathToDir = pathToDir;
 		this.socket = socket;
@@ -33,6 +35,7 @@ public class UserHandler implements Runnable {
 		this.redirectLink = redirectLink;
 	}
 
+	// The main method to handle the user request
 	@Override
 	public void run() {
 		try (var socketInputStream = socket.getInputStream();
@@ -40,6 +43,7 @@ public class UserHandler implements Runnable {
 		     var socketOutputStream = socket.getOutputStream();
 		     var socketBufferedWriter = new BufferedWriter(new OutputStreamWriter(socketOutputStream))) {
 
+			// Parse the incoming HTTP request
 			requestObj = new HttpRequest(socketBufferedReader);
 
 			String fullRequest = requestObj.getFullRequest();
@@ -48,7 +52,7 @@ public class UserHandler implements Runnable {
 				String requestPath = requestObj.getPath();
 				String method = requestObj.getMethod();
 
-				// Make separate method for GET handling
+				// Route the request based on the HTTP method
 				if (method.equals("GET")) getHandling(socketOutputStream);
 				else if (method.equals("POST") && requestPath.equals("/upload"))
 					postHandling(socketBufferedReader, socketOutputStream);
@@ -60,12 +64,14 @@ public class UserHandler implements Runnable {
 		}
 	}
 
+	// Method to redirect the client to another URL
 	private void redirect(String link, String message, int code, OutputStream socketOutputStream) throws IOException {
 		String httpResponse = "HTTP/1.1 " + code + " " + message + "\r\n" + "Location: " + link + "\r\n\r\n";
 		PrintStream ps = new PrintStream(socketOutputStream);
 		ps.write(httpResponse.getBytes("UTF-8"));
 	}
 
+	// Method to handle HTTP POST requests for file uploads
 	private void postHandling(BufferedReader socketBufferedReader, OutputStream socketOutputStream) {
 		printDebugInfo();
 
@@ -98,6 +104,7 @@ public class UserHandler implements Runnable {
 		}
 	}
 
+	// Method to count occurrences of a file in the directory
 	private int countFileOccurrences(String fileName, File pathToUploadedDir) {
 		int count = 0;
 		if (pathToUploadedDir.isDirectory()) {
@@ -125,6 +132,7 @@ public class UserHandler implements Runnable {
 		return count;
 	}
 
+	// Method to upload a text file using BufferedReader
 	private void uploadTxtFileUsingBufferedReader(File uploadDirectory, BufferedReader socketBufferedReader) {
 		String fileName = "";
 
@@ -201,7 +209,7 @@ public class UserHandler implements Runnable {
 		}
 	}
 
-
+	// Method to handle HTTP GET requests
 	private void getHandling(OutputStream socketOutputStream) {
 		String fileName = requestObj.getNameOfRequestedFile();
 		String fileExtension = requestObj.getExtensionOfRequestedFile();
@@ -246,6 +254,7 @@ public class UserHandler implements Runnable {
 		}
 	}
 
+	// "Debug" method for printing some debug info
 	private void printDebugInfo() {
 		String fullRequest = requestObj.getFullRequest();
 		Map<String, String> headers = requestObj.getHeaders();
@@ -291,6 +300,7 @@ public class UserHandler implements Runnable {
 	}
 
 
+	// Method to send the headers and status code. The headers pass in a map
 	private void sendHeaders(OutputStream outputStream, int statusCode, String statusText, Map<String, String> headersMap) {
 		PrintStream ps = new PrintStream(outputStream);
 		ps.printf("HTTP/1.1 %s %s%n", statusCode, statusText);
